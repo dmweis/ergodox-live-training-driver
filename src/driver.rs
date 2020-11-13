@@ -186,7 +186,7 @@ fn open_device(
         error!("Desired config not active");
         device_handle
             .set_active_configuration(config.config_id)
-            .expect("Failed setting desired config");
+            .map_err(|_| DriverError::FailedToOpen)?;
     }
     device_handle.claim_interface(config.iface_id)?;
     Ok(device_handle)
