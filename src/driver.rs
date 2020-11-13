@@ -282,9 +282,4 @@ mod tests {
         let messages = decode_packet(&payload);
         assert!(messages.is_empty());
     }
-
-    #[test]
-    fn broken() {
-        assert!(false);
-    }
 }
