@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["ergodox_live_training_driver"] = [{"text":"impl Send for DeviceConfiguration","synthetic":true,"types":[]},{"text":"impl Send for ErgodoxDriver","synthetic":true,"types":[]},{"text":"impl Send for Command","synthetic":true,"types":[]},{"text":"impl Send for Event","synthetic":true,"types":[]},{"text":"impl Send for DriverError","synthetic":true,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

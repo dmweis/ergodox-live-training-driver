@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["ergodox_live_training_driver"] = [{"text":"impl Unpin for DeviceConfiguration","synthetic":true,"types":[]},{"text":"impl Unpin for ErgodoxDriver","synthetic":true,"types":[]},{"text":"impl Unpin for Command","synthetic":true,"types":[]},{"text":"impl Unpin for Event","synthetic":true,"types":[]},{"text":"impl Unpin for DriverError","synthetic":true,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

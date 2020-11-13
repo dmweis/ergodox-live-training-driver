@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["ergodox_live_training_driver"] = [{"text":"impl RefUnwindSafe for DeviceConfiguration","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for ErgodoxDriver","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for Command","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for Event","synthetic":true,"types":[]},{"text":"impl RefUnwindSafe for DriverError","synthetic":true,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
