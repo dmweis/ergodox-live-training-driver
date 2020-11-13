@@ -2,6 +2,8 @@
 
 Driver for the live training protocol for the GMK firmware used on the Erogdox-ez keyboard.  
 
+[Private docs](https://davidweis.dev/ergodox-live-training-driver/ergodox_live_training_driver/)  
+
 ## License
 
 This project is dual licensed under MIT and Apache licenses.  
