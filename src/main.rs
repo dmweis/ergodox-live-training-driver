@@ -1,4 +1,5 @@
 mod driver;
+mod layout_store_client;
 
 use anyhow::Result;
 use log::*;
@@ -8,10 +9,16 @@ fn main() -> Result<()> {
     TermLogger::init(LevelFilter::Info, Config::default(), TerminalMode::Mixed)?;
     let mut device = driver::ErgodoxDriver::connect_to_first()?;
     device.write(driver::Command::LandingPage)?;
-    device
-        .read()?
-        .iter()
-        .for_each(|message| info!("{:?}", message));
+    std::thread::sleep(std::time::Duration::from_millis(500));
+    let mut layout: Option<layout_store_client::Layout> = None;
+    device.read()?.iter().for_each(|message| {
+        if let driver::Event::LayoutName(ref layout_id) = message {
+            layout =
+                layout_store_client::query_layout(layout_id.id.clone(), layout_id.revision.clone())
+                    .ok();
+        }
+        info!("{:?}", message)
+    });
     loop {
         std::thread::sleep(std::time::Duration::from_secs(1));
         device.write(driver::Command::Pair)?;
@@ -27,10 +34,22 @@ fn main() -> Result<()> {
             break;
         }
     }
+    let mut current_layer_index = 0;
     loop {
-        device
-            .read()?
-            .iter()
-            .for_each(|message| info!("{:?}", message));
+        for event in device.read()? {
+            match event {
+                driver::Event::Layer(layer_index) => {
+                    info!("Layer switched to {}", layer_index);
+                    current_layer_index = layer_index;
+                }
+                driver::Event::KeyUp(key_code) | driver::Event::KeyDown(key_code) => {
+                    if let Some(layout) = &layout {
+                        let key = layout.get_key(key_code, current_layer_index as usize);
+                        info!("Key {:#?}", key);
+                    }
+                }
+                _ => info!("Event {:?}", event),
+            }
+        }
     }
 }

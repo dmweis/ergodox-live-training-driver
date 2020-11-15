@@ -24,6 +24,28 @@ const STATUS_SUCCESS: u8 = 0;
 
 const SEPARATOR: u8 = 254;
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct LayoutId {
+    pub id: String,
+    pub revision: String,
+}
+
+impl LayoutId {
+    fn decode(text: &str) -> Result<LayoutId> {
+        let mut split = text.split('/');
+        let id = split.next().ok_or(DriverError::FailedToParseLayout)?;
+        let revision = split.next().ok_or(DriverError::FailedToParseLayout)?;
+        if split.next().is_none() {
+            Ok(LayoutId {
+                id: id.to_owned(),
+                revision: revision.to_owned(),
+            })
+        } else {
+            Err(DriverError::FailedToParseLayout.into())
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Command {
     Pair = 0,
@@ -33,14 +55,26 @@ pub enum Command {
     LiveTraining = 3,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
+pub struct KeyCode {
+    pub column: u8,
+    pub row: u8,
+}
+
+impl KeyCode {
+    pub fn new(column: u8, row: u8) -> Self {
+        KeyCode { column, row }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum Event {
     Paired,
     Layer(u8),
     LiveTraining,
-    KeyDown(u8, u8),
-    KeyUp(u8, u8),
-    LayoutName(String),
+    KeyDown(KeyCode),
+    KeyUp(KeyCode),
+    LayoutName(LayoutId),
 }
 
 #[derive(Debug)]
@@ -66,6 +100,8 @@ pub enum DriverError {
     FailedToWrite,
     #[error("Failed decode packet")]
     FailedToDecode,
+    #[error("Failed to parse layout description")]
+    FailedToParseLayout,
 }
 
 pub struct ErgodoxDriver {
@@ -142,22 +178,20 @@ fn decode_packet(data: &[u8]) -> Vec<Event> {
             EVT_KEYUP => {
                 let col = payload.get(2).ok_or(DriverError::FailedToDecode)?;
                 let row = payload.get(3).ok_or(DriverError::FailedToDecode)?;
-                Event::KeyUp(*col, *row)
+                Event::KeyUp(KeyCode::new(*col, *row))
             }
             EVT_KEYDOWN => {
                 let col = payload.get(2).ok_or(DriverError::FailedToDecode)?;
                 let row = payload.get(3).ok_or(DriverError::FailedToDecode)?;
-                Event::KeyDown(*col, *row)
+                Event::KeyDown(KeyCode::new(*col, *row))
             }
             EVT_LAYOUT_NAME | EVT_LAYOUT_NAME_LEGACY => {
                 let unicode_buffer = payload
                     .get(2..payload.len() - 1)
                     .ok_or(DriverError::FailedToDecode)?;
-                Event::LayoutName(
-                    std::str::from_utf8(unicode_buffer)
-                        .map_err(|_| DriverError::FailedToDecode)?
-                        .to_owned(),
-                )
+                let text =
+                    std::str::from_utf8(unicode_buffer).map_err(|_| DriverError::FailedToDecode)?;
+                Event::LayoutName(LayoutId::decode(&text)?)
             }
             _ => return Err(DriverError::FailedToDecode.into()),
         };
@@ -273,7 +307,13 @@ mod tests {
         ];
         let messages = decode_packet(&payload);
         assert!(messages.len() == 1);
-        assert_eq!(messages[0], Event::LayoutName(String::from("zr9qm/MvbAb")));
+        assert_eq!(
+            messages[0],
+            Event::LayoutName(LayoutId {
+                id: "zr9qm".to_owned(),
+                revision: "MvbAb".to_owned()
+            })
+        );
     }
 
     #[test]
@@ -281,5 +321,12 @@ mod tests {
         let payload = [];
         let messages = decode_packet(&payload);
         assert!(messages.is_empty());
+    }
+
+    #[test]
+    fn parse_layout() {
+        let layout = LayoutId::decode("zr9qm/MvbAb").unwrap();
+        assert_eq!(layout.id, "zr9qm");
+        assert_eq!(layout.revision, "MvbAb");
     }
 }

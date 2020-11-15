@@ -1,0 +1,15 @@
+query LayoutQuery($hashId: String!, $revisionId: String!) {
+  Layout(hashId: $hashId, revisionId: $revisionId) {
+    geometry
+    title
+    revision {
+      model
+      layers {
+        position
+        color
+        title
+        keys
+      }
+    }
+  }
+}
