@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["OPERATION_NAME",""],["QUERY",""],["__QUERY_WORKAROUND",""]],"struct":[["LayoutQueryLayout","a keyboard layout"],["LayoutQueryLayoutRevision","a given version of a revision"],["LayoutQueryLayoutRevisionLayers","a layer in a revision"],["ResponseData",""],["Variables",""]],"type":[["Boolean",""],["Float",""],["ID",""],["Int",""],["Json",""]]});

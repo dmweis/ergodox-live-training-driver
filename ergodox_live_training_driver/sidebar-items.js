@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""]],"mod":[["driver",""]]});
+initSidebarItems({"fn":[["main",""]],"mod":[["driver",""],["layout_store_client",""]]});
