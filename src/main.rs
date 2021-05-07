@@ -6,7 +6,12 @@ use log::*;
 use simplelog::*;
 
 fn main() -> Result<()> {
-    TermLogger::init(LevelFilter::Info, Config::default(), TerminalMode::Mixed)?;
+    TermLogger::init(
+        LevelFilter::Info,
+        Config::default(),
+        TerminalMode::Mixed,
+        ColorChoice::Auto,
+    )?;
     let mut device = driver::ErgodoxDriver::connect_to_first()?;
     device.write(driver::Command::LandingPage)?;
     std::thread::sleep(std::time::Duration::from_millis(500));

@@ -58,6 +58,8 @@ pub struct Layer {
 pub struct Key {
     color: Option<String>,
     key_code: Option<String>,
+    layer: Option<i64>,
+    command: Option<String>,
 }
 
 impl Layout {
@@ -79,21 +81,28 @@ impl Layout {
             let color = layer.color;
             let mut keys = vec![];
             for key in layer.keys.ok_or(QueryError::MissingDataInResponse)? {
-                let color = key.get("color").and_then(|color| {
-                    if let Value::String(color) = color {
-                        Some(color.to_owned())
-                    } else {
-                        None
-                    }
+                let color = key.get("color").and_then(|color| match color {
+                    Value::String(color) => Some(color.to_owned()),
+                    _ => None,
                 });
-                let key_code = key.get("code").and_then(|key_code| {
-                    if let Value::String(key_code) = key_code {
-                        Some(key_code.to_owned())
-                    } else {
-                        None
-                    }
+                let key_code = key.get("code").and_then(|key_code| match key_code {
+                    Value::String(key_code) => Some(key_code.to_owned()),
+                    _ => None,
                 });
-                keys.push(Key { color, key_code });
+                let layer = key.get("layer").and_then(|layer| match layer {
+                    Value::Number(layer) => layer.as_i64(),
+                    _ => None,
+                });
+                let command = key.get("command").and_then(|command| match command {
+                    Value::String(command) => Some(command.to_owned()),
+                    _ => None,
+                });
+                keys.push(Key {
+                    color,
+                    key_code,
+                    layer,
+                    command,
+                });
             }
             layers.push(Layer {
                 name,
