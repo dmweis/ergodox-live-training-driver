@@ -33,7 +33,7 @@ impl FromStr for KeyboardType {
             "moonlander" => Ok(KeyboardType::Moonlander),
             // TODO: Make sure what this one actually is
             "planck" => Ok(KeyboardType::Planck),
-            _ => Err(QueryError::ParseKeyboardError.into()),
+            _ => Err(QueryError::ParseKeyboardError),
         }
     }
 }
