@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["open_layout"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/clap/3.0.0-beta.2/clap/derive/trait.FromArgMatches.html\" title=\"trait clap::derive::FromArgMatches\">FromArgMatches</a> for <a class=\"struct\" href=\"open_layout/struct.Args.html\" title=\"struct open_layout::Args\">Args</a>","synthetic":false,"types":["open_layout::Args"]}];
+implementors["open_ergodox_layout"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/clap/3.0.0-beta.2/clap/derive/trait.FromArgMatches.html\" title=\"trait clap::derive::FromArgMatches\">FromArgMatches</a> for <a class=\"struct\" href=\"open_ergodox_layout/struct.Args.html\" title=\"struct open_ergodox_layout::Args\">Args</a>","synthetic":false,"types":["open_ergodox_layout::Args"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

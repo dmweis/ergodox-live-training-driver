@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["ergodox_driver","open_layout","training"];
+window.ALL_CRATES = ["ergodox_driver","open_ergodox_layout","training"];
