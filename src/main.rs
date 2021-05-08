@@ -47,7 +47,7 @@ fn main() -> Result<()> {
             if let driver::Event::Paired = message {
                 paired = true;
             }
-            info!("{:?}", message);
+            info!("Received other message: {:?}", message);
         }
         if paired {
             device.write(driver::Command::LiveTraining)?;
