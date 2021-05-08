@@ -60,6 +60,7 @@ pub struct Key {
     key_code: Option<String>,
     layer: Option<i64>,
     command: Option<String>,
+    modifiers: Option<String>,
 }
 
 impl Layout {
@@ -97,11 +98,16 @@ impl Layout {
                     Value::String(command) => Some(command.to_owned()),
                     _ => None,
                 });
+                let modifiers = key.get("modifiers").and_then(|modifiers| match modifiers {
+                    Value::String(modifiers) => Some(modifiers.to_owned()),
+                    _ => None,
+                });
                 keys.push(Key {
                     color,
                     key_code,
                     layer,
                     command,
+                    modifiers,
                 });
             }
             layers.push(Layer {
