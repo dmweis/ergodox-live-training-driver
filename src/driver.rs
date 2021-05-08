@@ -167,7 +167,7 @@ impl ErgodoxDriver {
             .read_interrupt(
                 self.configuration.in_endpoint_address,
                 &mut buf,
-                std::time::Duration::from_millis(1000),
+                std::time::Duration::from_millis(100),
             )
             .unwrap_or_default();
         let data_read = &buf[0..read_size];
