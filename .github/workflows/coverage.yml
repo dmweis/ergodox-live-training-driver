@@ -12,9 +12,6 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
-      - name: Install libssl
-        run: sudo apt update && sudo apt install libssl-dev
-
       - name: Checkout repository
         uses: actions/checkout@v2
 
