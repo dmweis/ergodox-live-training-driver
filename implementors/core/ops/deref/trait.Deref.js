@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["ergodox_live_training_driver"] = [{"text":"impl Deref for ERGODOX_MAP","synthetic":false,"types":[]}];
+implementors["ergodox_live_training_driver"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/deref/trait.Deref.html\" title=\"trait core::ops::deref::Deref\">Deref</a> for <a class=\"struct\" href=\"ergodox_live_training_driver/layout_store_client/struct.ERGODOX_MAP.html\" title=\"struct ergodox_live_training_driver::layout_store_client::ERGODOX_MAP\">ERGODOX_MAP</a>","synthetic":false,"types":["ergodox_live_training_driver::layout_store_client::ERGODOX_MAP"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

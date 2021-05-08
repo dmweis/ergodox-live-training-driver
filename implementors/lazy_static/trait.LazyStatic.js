@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["ergodox_live_training_driver"] = [{"text":"impl LazyStatic for ERGODOX_MAP","synthetic":false,"types":[]}];
+implementors["ergodox_live_training_driver"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/lazy_static/1.4.0/lazy_static/trait.LazyStatic.html\" title=\"trait lazy_static::LazyStatic\">LazyStatic</a> for <a class=\"struct\" href=\"ergodox_live_training_driver/layout_store_client/struct.ERGODOX_MAP.html\" title=\"struct ergodox_live_training_driver::layout_store_client::ERGODOX_MAP\">ERGODOX_MAP</a>","synthetic":false,"types":["ergodox_live_training_driver::layout_store_client::ERGODOX_MAP"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
