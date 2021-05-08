@@ -13,16 +13,22 @@ fn main() -> Result<()> {
         ColorChoice::Auto,
     )?;
     let mut device = driver::ErgodoxDriver::connect_to_first()?;
+    info!("Connected to {:?}", device.keyboard_type());
+    info!("Querying layout");
     let mut layout: Option<layout_store_client::Layout> = None;
     loop {
         for message in device.read()? {
             if let driver::Event::LayoutName(ref layout_id) = message {
                 layout = layout_store_client::query_layout(
-                    layout_id.id.clone(),
-                    layout_id.revision.clone(),
+                    layout_id.id().to_owned(),
+                    layout_id.revision().to_owned(),
                 )
                 .ok();
-                info!("Got layout");
+                info!(
+                    "Layout received id: {} revision: {}",
+                    layout_id.id(),
+                    layout_id.revision()
+                );
                 break;
             }
             info!("Received other message: {:?}", message)
@@ -32,6 +38,7 @@ fn main() -> Result<()> {
         }
         device.write(driver::Command::LandingPage)?;
     }
+    info!("Pairing, please press the Oryx key");
     loop {
         std::thread::sleep(std::time::Duration::from_secs(1));
         device.write(driver::Command::Pair)?;
@@ -47,6 +54,7 @@ fn main() -> Result<()> {
             break;
         }
     }
+    info!("Paired!");
     let mut current_layer_index = 0;
     loop {
         for event in device.read()? {
@@ -61,7 +69,8 @@ fn main() -> Result<()> {
                         info!("Key {:#?}", key);
                     }
                 }
-                _ => info!("Event {:?}", event),
+                driver::Event::LiveTraining => info!("Started live training! Click some buttons!"),
+                _ => info!("Other event {:?}", event),
             }
         }
     }

@@ -2,7 +2,6 @@ use crate::driver::KeyCode;
 use anyhow::Result;
 use graphql_client::*;
 use lazy_static::*;
-use log::*;
 use serde_json::Value;
 use std::str::FromStr;
 use thiserror::Error;
