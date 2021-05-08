@@ -1,7 +1,5 @@
-mod driver;
-mod layout_store_client;
-
 use anyhow::Result;
+use ergodox_driver::{driver, layout_store_client};
 use log::*;
 use simplelog::*;
 
