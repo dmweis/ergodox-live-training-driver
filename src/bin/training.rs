@@ -2,6 +2,10 @@ use anyhow::Result;
 use ergodox_driver::{driver, layout_store_client};
 use log::*;
 use simplelog::*;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 
 fn main() -> Result<()> {
     TermLogger::init(
@@ -10,11 +14,20 @@ fn main() -> Result<()> {
         TerminalMode::Mixed,
         ColorChoice::Auto,
     )?;
+
+    let keep_running = Arc::new(AtomicBool::new(true));
+    let keep_running_handle = keep_running.clone();
+
+    ctrlc::set_handler(move || {
+        keep_running_handle.store(false, Ordering::Release);
+        info!("Caught interrupt");
+    })?;
+
     let mut device = driver::ErgodoxDriver::connect_to_first()?;
     info!("Connected to {:?}", device.keyboard_type());
     info!("Querying layout");
     let mut layout: Option<layout_store_client::Layout> = None;
-    loop {
+    while keep_running.load(Ordering::Acquire) {
         for message in device.read()? {
             if let driver::Event::LayoutName(ref layout_id) = message {
                 layout = layout_store_client::query_layout(
@@ -36,19 +49,22 @@ fn main() -> Result<()> {
         }
         device.write(driver::Command::LandingPage)?;
     }
-    if let Some(layout) = &layout {
-        info!("Oryx keys are at:");
-        for (key_position, layer) in layout.find_oryx_keys() {
-            info!("   {} layer: {}", key_position, layer);
+    if keep_running.load(Ordering::Acquire) {
+        if let Some(layout) = &layout {
+            info!("Oryx keys are at:");
+            for (key_position, layer) in layout.find_oryx_keys() {
+                info!("   {} layer: {}", key_position, layer);
+            }
         }
+        info!("Pairing, please press the Oryx key");
     }
-    info!("Pairing, please press the Oryx key");
-    loop {
+    while keep_running.load(Ordering::Acquire) {
         device.write(driver::Command::Pair)?;
         let mut paired = false;
         for message in device.read()? {
             if let driver::Event::Paired = message {
                 paired = true;
+                info!("Paired!");
             } else {
                 info!("Received other message: {:?}", message);
             }
@@ -58,9 +74,8 @@ fn main() -> Result<()> {
             break;
         }
     }
-    info!("Paired!");
     let mut current_layer_index = 0;
-    loop {
+    while keep_running.load(Ordering::Acquire) {
         for event in device.read()? {
             match event {
                 driver::Event::Layer(layer_index) => {
@@ -82,4 +97,6 @@ fn main() -> Result<()> {
             }
         }
     }
+    info!("Exiting...");
+    Ok(())
 }
