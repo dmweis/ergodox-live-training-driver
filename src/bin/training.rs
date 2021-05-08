@@ -36,16 +36,22 @@ fn main() -> Result<()> {
         }
         device.write(driver::Command::LandingPage)?;
     }
+    if let Some(layout) = &layout {
+        info!("Oryx keys are at:");
+        for (key_position, layer) in layout.find_oryx_keys() {
+            info!("   {} layer: {}", key_position, layer);
+        }
+    }
     info!("Pairing, please press the Oryx key");
     loop {
-        std::thread::sleep(std::time::Duration::from_secs(1));
         device.write(driver::Command::Pair)?;
         let mut paired = false;
         for message in device.read()? {
             if let driver::Event::Paired = message {
                 paired = true;
+            } else {
+                info!("Received other message: {:?}", message);
             }
-            info!("Received other message: {:?}", message);
         }
         if paired {
             device.write(driver::Command::LiveTraining)?;
