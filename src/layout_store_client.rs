@@ -3,6 +3,7 @@ use anyhow::Result;
 use graphql_client::*;
 use lazy_static::*;
 use serde_json::Value;
+use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -60,6 +61,32 @@ pub struct Key {
     layer: Option<i64>,
     command: Option<String>,
     modifiers: Option<String>,
+}
+
+impl fmt::Display for Key {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let color = match &self.color {
+            Some(color) => format!("color: {} ", color),
+            None => "".to_owned(),
+        };
+        let key_code = match &self.key_code {
+            Some(key_code) => format!("key_code: {} ", key_code),
+            None => "".to_owned(),
+        };
+        let layer = match &self.layer {
+            Some(layer) => format!("layer: {} ", layer),
+            None => "".to_owned(),
+        };
+        let command = match &self.command {
+            Some(command) => format!("command: {} ", command),
+            None => "".to_owned(),
+        };
+        let modifiers = match &self.modifiers {
+            Some(modifiers) => format!("modifiers: {} ", modifiers),
+            None => "".to_owned(),
+        };
+        write!(f, "{}{}{}{}{}", color, key_code, layer, command, modifiers)
+    }
 }
 
 impl Layout {
@@ -126,8 +153,8 @@ impl Layout {
 
     pub fn get_key(&self, key: KeyCode, layer: usize) -> Option<&Key> {
         let key_index = ERGODOX_MAP
-            .get(key.column as usize)
-            .and_then(|column| column.get(key.row as usize))?;
+            .get(key.column() as usize)
+            .and_then(|column| column.get(key.row() as usize))?;
         let key = self
             .layers
             .get(layer)

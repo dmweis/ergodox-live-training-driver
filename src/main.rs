@@ -66,7 +66,11 @@ fn main() -> Result<()> {
                 driver::Event::KeyUp(key_code) | driver::Event::KeyDown(key_code) => {
                     if let Some(layout) = &layout {
                         let key = layout.get_key(key_code, current_layer_index as usize);
-                        info!("Key {:#?}", key);
+                        if let Some(key) = key {
+                            info!("pos {} info {}", key_code, key);
+                        } else {
+                            warn!("Unknown key {}", key_code);
+                        }
                     }
                 }
                 driver::Event::LiveTraining => info!("Started live training! Click some buttons!"),

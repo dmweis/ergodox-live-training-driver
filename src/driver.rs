@@ -1,5 +1,6 @@
 use anyhow::Result;
 use rusb::{Device, DeviceHandle, DeviceList, Direction, GlobalContext};
+use std::fmt;
 use thiserror::Error;
 
 /// legacy - zsa's vendor id
@@ -69,15 +70,29 @@ pub enum Command {
     LiveTraining = 3,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct KeyCode {
-    pub column: u8,
-    pub row: u8,
+    column: u8,
+    row: u8,
 }
 
 impl KeyCode {
     pub fn new(column: u8, row: u8) -> Self {
         KeyCode { column, row }
+    }
+
+    pub fn column(&self) -> u8 {
+        self.column
+    }
+
+    pub fn row(&self) -> u8 {
+        self.row
+    }
+}
+
+impl fmt::Display for KeyCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "col: {} row: {}", self.column, self.row)
     }
 }
 
