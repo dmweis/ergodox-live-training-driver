@@ -2,8 +2,8 @@ use crate::driver::KeyCode;
 use anyhow::Result;
 use graphql_client::*;
 use lazy_static::*;
-use log::*;
 use serde_json::Value;
+use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -33,7 +33,7 @@ impl FromStr for KeyboardType {
             "moonlander" => Ok(KeyboardType::Moonlander),
             // TODO: Make sure what this one actually is
             "planck" => Ok(KeyboardType::Planck),
-            _ => Err(QueryError::ParseKeyboardError.into()),
+            _ => Err(QueryError::ParseKeyboardError),
         }
     }
 }
@@ -58,6 +58,35 @@ pub struct Layer {
 pub struct Key {
     color: Option<String>,
     key_code: Option<String>,
+    layer: Option<i64>,
+    command: Option<String>,
+    modifiers: Option<String>,
+}
+
+impl fmt::Display for Key {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let color = match &self.color {
+            Some(color) => format!("color: {} ", color),
+            None => "".to_owned(),
+        };
+        let key_code = match &self.key_code {
+            Some(key_code) => format!("key_code: {} ", key_code),
+            None => "".to_owned(),
+        };
+        let layer = match &self.layer {
+            Some(layer) => format!("layer: {} ", layer),
+            None => "".to_owned(),
+        };
+        let command = match &self.command {
+            Some(command) => format!("command: {} ", command),
+            None => "".to_owned(),
+        };
+        let modifiers = match &self.modifiers {
+            Some(modifiers) => format!("modifiers: {} ", modifiers),
+            None => "".to_owned(),
+        };
+        write!(f, "{}{}{}{}{}", color, key_code, layer, command, modifiers)
+    }
 }
 
 impl Layout {
@@ -79,21 +108,33 @@ impl Layout {
             let color = layer.color;
             let mut keys = vec![];
             for key in layer.keys.ok_or(QueryError::MissingDataInResponse)? {
-                let color = key.get("color").and_then(|color| {
-                    if let Value::String(color) = color {
-                        Some(color.to_owned())
-                    } else {
-                        None
-                    }
+                let color = key.get("color").and_then(|color| match color {
+                    Value::String(color) => Some(color.to_owned()),
+                    _ => None,
                 });
-                let key_code = key.get("code").and_then(|key_code| {
-                    if let Value::String(key_code) = key_code {
-                        Some(key_code.to_owned())
-                    } else {
-                        None
-                    }
+                let key_code = key.get("code").and_then(|key_code| match key_code {
+                    Value::String(key_code) => Some(key_code.to_owned()),
+                    _ => None,
                 });
-                keys.push(Key { color, key_code });
+                let layer = key.get("layer").and_then(|layer| match layer {
+                    Value::Number(layer) => layer.as_i64(),
+                    _ => None,
+                });
+                let command = key.get("command").and_then(|command| match command {
+                    Value::String(command) => Some(command.to_owned()),
+                    _ => None,
+                });
+                let modifiers = key.get("modifiers").and_then(|modifiers| match modifiers {
+                    Value::String(modifiers) => Some(modifiers.to_owned()),
+                    _ => None,
+                });
+                keys.push(Key {
+                    color,
+                    key_code,
+                    layer,
+                    command,
+                    modifiers,
+                });
             }
             layers.push(Layer {
                 name,
@@ -112,8 +153,8 @@ impl Layout {
 
     pub fn get_key(&self, key: KeyCode, layer: usize) -> Option<&Key> {
         let key_index = ERGODOX_MAP
-            .get(key.column as usize)
-            .and_then(|column| column.get(key.row as usize))?;
+            .get(key.column() as usize)
+            .and_then(|column| column.get(key.row() as usize))?;
         let key = self
             .layers
             .get(layer)

@@ -1,6 +1,6 @@
 use anyhow::Result;
-use log::*;
 use rusb::{Device, DeviceHandle, DeviceList, Direction, GlobalContext};
+use std::fmt;
 use thiserror::Error;
 
 /// legacy - zsa's vendor id
@@ -11,6 +11,13 @@ const ERGODOX_IDS: [u16; 4] = [0x1307, 0x4974, 0x4975, 0x4976];
 const PLANCK_IDS: [u16; 3] = [0x6060, 0xc6ce, 0xc6cf];
 /// mk1
 const MOONLANDER_IDS: [u16; 1] = [0x1969];
+
+#[derive(Debug, Clone, Copy)]
+pub enum KeyboardType {
+    Ergodox,
+    Planck,
+    Moonlander,
+}
 
 const EVT_PAIRED: u8 = 0;
 const EVT_LAYER: u8 = 2;
@@ -26,8 +33,8 @@ const SEPARATOR: u8 = 254;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct LayoutId {
-    pub id: String,
-    pub revision: String,
+    id: String,
+    revision: String,
 }
 
 impl LayoutId {
@@ -44,6 +51,14 @@ impl LayoutId {
             Err(DriverError::FailedToParseLayout.into())
         }
     }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn revision(&self) -> &str {
+        &self.revision
+    }
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -55,15 +70,29 @@ pub enum Command {
     LiveTraining = 3,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct KeyCode {
-    pub column: u8,
-    pub row: u8,
+    column: u8,
+    row: u8,
 }
 
 impl KeyCode {
     pub fn new(column: u8, row: u8) -> Self {
         KeyCode { column, row }
+    }
+
+    pub fn column(&self) -> u8 {
+        self.column
+    }
+
+    pub fn row(&self) -> u8 {
+        self.row
+    }
+}
+
+impl fmt::Display for KeyCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "col: {} row: {}", self.column, self.row)
     }
 }
 
@@ -108,11 +137,13 @@ pub struct ErgodoxDriver {
     _device: Device<GlobalContext>,
     configuration: DeviceConfiguration,
     handle: DeviceHandle<GlobalContext>,
+    keyboard_type: KeyboardType,
 }
 
 impl ErgodoxDriver {
     pub fn connect_to_first() -> Result<ErgodoxDriver> {
-        let first_device = connect_to_first()?.ok_or(DriverError::DeviceNotFound)?;
+        let (first_device, keyboard_type) =
+            connect_to_first()?.ok_or(DriverError::DeviceNotFound)?;
         let configuration =
             select_interface(&first_device)?.ok_or(DriverError::FailedToGetDescription)?;
         let opened_device = open_device(&first_device, &configuration)?;
@@ -120,6 +151,7 @@ impl ErgodoxDriver {
             _device: first_device,
             configuration,
             handle: opened_device,
+            keyboard_type,
         })
     }
 
@@ -140,8 +172,6 @@ impl ErgodoxDriver {
         if written < 1 {
             return Err(DriverError::FailedToWrite.into());
         }
-        trace!("Written bytes {} of {:?}", written, command);
-        info!("Written command {:?}", command);
         Ok(())
     }
 
@@ -152,12 +182,15 @@ impl ErgodoxDriver {
             .read_interrupt(
                 self.configuration.in_endpoint_address,
                 &mut buf,
-                std::time::Duration::from_millis(1000),
+                std::time::Duration::from_millis(100),
             )
             .unwrap_or_default();
         let data_read = &buf[0..read_size];
-        trace!("Read data {:?}", data_read);
         Ok(decode_packet(data_read))
+    }
+
+    pub fn keyboard_type(&self) -> KeyboardType {
+        self.keyboard_type
     }
 }
 
@@ -207,17 +240,9 @@ fn open_device(
     device: &Device<GlobalContext>,
     config: &DeviceConfiguration,
 ) -> Result<DeviceHandle<GlobalContext>> {
-    trace!("Selected config {:?}", &config);
     let mut device_handle = device.open()?;
-
-    trace!(
-        "Has kernel driver {}",
-        device_handle.kernel_driver_active(config.iface_id)?
-    );
-
     let active_config = device_handle.active_configuration()?;
     if active_config != config.config_id {
-        error!("Desired config not active");
         device_handle
             .set_active_configuration(config.config_id)
             .map_err(|_| DriverError::FailedToOpen)?;
@@ -233,21 +258,14 @@ fn select_interface(device: &Device<GlobalContext>) -> Result<Option<DeviceConfi
         for device_interface in conf_description.interfaces() {
             for descriptor in device_interface.descriptors() {
                 if descriptor.class_code() == 255 {
-                    info!("Found interface");
-
-                    for endpoint_descriptor in descriptor.endpoint_descriptors() {
-                        info!("Endpoint {:?}", endpoint_descriptor);
-                    }
                     let in_endpoint = descriptor
                         .endpoint_descriptors()
                         .find(|endpoint| endpoint.direction() == Direction::In)
                         .ok_or(DriverError::FailedToOpen)?;
-                    info!("In endpoint type is {:?}", in_endpoint.transfer_type());
                     let out_endpoint = descriptor
                         .endpoint_descriptors()
                         .find(|endpoint| endpoint.direction() == Direction::Out)
                         .ok_or(DriverError::FailedToOpen)?;
-                    info!("Out endpoint type is {:?}", out_endpoint.transfer_type());
                     return Ok(Some(DeviceConfiguration {
                         config_id: conf_description.number(),
                         iface_id: descriptor.interface_number(),
@@ -261,7 +279,7 @@ fn select_interface(device: &Device<GlobalContext>) -> Result<Option<DeviceConfi
     Ok(None)
 }
 
-fn connect_to_first() -> Result<Option<Device<GlobalContext>>> {
+fn connect_to_first() -> Result<Option<(Device<GlobalContext>, KeyboardType)>> {
     for device in DeviceList::new()
         .map_err(|_| DriverError::FailedToIterateDevices)?
         .iter()
@@ -269,30 +287,18 @@ fn connect_to_first() -> Result<Option<Device<GlobalContext>>> {
         let device_description = device
             .device_descriptor()
             .map_err(|_| DriverError::FailedToGetDescription)?;
-        trace!(
-            "vendor ID: {:x} produce ID: {:x}",
-            device_description.vendor_id(),
-            device_description.product_id()
-        );
         if VENDOR_IDS.contains(&device_description.vendor_id()) {
-            info!("Found ZSA device");
             if ERGODOX_IDS.contains(&device_description.product_id()) {
-                info!("Found ergodox!");
-                return Ok(Some(device));
+                return Ok(Some((device, KeyboardType::Ergodox)));
             }
-
             if MOONLANDER_IDS.contains(&device_description.product_id()) {
-                info!("Found moonlander!");
-                return Ok(Some(device));
+                return Ok(Some((device, KeyboardType::Moonlander)));
             }
-
             if PLANCK_IDS.contains(&device_description.product_id()) {
-                info!("Found planck!");
-                return Ok(Some(device));
+                return Ok(Some((device, KeyboardType::Planck)));
             }
         }
     }
-    error!("No ZSA keyboard found");
     Ok(None)
 }
 
