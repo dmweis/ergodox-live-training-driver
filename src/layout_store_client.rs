@@ -7,6 +7,8 @@ use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
 
+const ORYX_KEY: &str = "WEBUSB_PAIR";
+
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum QueryError {
@@ -160,6 +162,28 @@ impl Layout {
             .get(layer)
             .and_then(|layer| layer.keys.get(*key_index as usize))?;
         Some(key)
+    }
+
+    pub fn find_oryx_keys(&self) -> Vec<(KeyCode, u32)> {
+        let mut oryx_keys = vec![];
+        for (layer_id, layer) in self.layers.iter().enumerate() {
+            for (key_id, key) in layer.keys.iter().enumerate() {
+                if let Some(key_code) = &key.key_code {
+                    if key_code == ORYX_KEY {
+                        for (row_id, row) in ERGODOX_MAP.iter().enumerate() {
+                            if let Some(column_id) = row.iter().position(|id| *id == key_id as i32)
+                            {
+                                oryx_keys.push((
+                                    KeyCode::new(column_id as u8, row_id as u8),
+                                    layer_id as u32,
+                                ))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        oryx_keys
     }
 }
 
