@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/dmweis/ergodox-live-training-driver/branch/main/graph/badge.svg)](https://codecov.io/gh/dmweis/ergodox-live-training-driver)
 [![Rust](https://github.com/dmweis/ergodox-live-training-driver/workflows/Rust/badge.svg)](https://github.com/dmweis/ergodox-live-training-driver/actions)
-[![Private docs](https://github.com/dmweis/ergodox-live-training-driver/workflows/Deploy%20Docs%20to%20GitHub%20Pages/badge.svg)](https://davidweis.dev/ergodox-live-training-driver/ergodox-live-training-driver/index.html)
+[![Private docs](https://github.com/dmweis/ergodox-live-training-driver/workflows/Deploy%20Docs%20to%20GitHub%20Pages/badge.svg)](https://davidweis.dev/ergodox-live-training-driver/ergodox_driver/index.html)
 
 Driver for the live training protocol for the GMK firmware used on the Erogdox-ez keyboard.
 
