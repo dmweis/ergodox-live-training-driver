@@ -1,8 +1,12 @@
 # Ergodox Live Training Driver
 
-Driver for the live training protocol for the GMK firmware used on the Erogdox-ez keyboard.  
+[![codecov](https://codecov.io/gh/dmweis/ergodox-live-training-driver/branch/main/graph/badge.svg)](https://codecov.io/gh/dmweis/ergodox-live-training-driver)
+[![Rust](https://github.com/dmweis/ergodox-live-training-driver/workflows/Rust/badge.svg)](https://github.com/dmweis/ergodox-live-training-driver/actions)
+[![Private docs](https://github.com/dmweis/ergodox-live-training-driver/workflows/Deploy%20Docs%20to%20GitHub%20Pages/badge.svg)](https://davidweis.dev/ergodox-live-training-driver/ergodox-live-training-driver/index.html)
 
-[Private docs](https://davidweis.dev/ergodox-live-training-driver/ergodox_live_training_driver/)  
+Driver for the live training protocol for the GMK firmware used on the Erogdox-ez keyboard.
+
+[Private docs](https://davidweis.dev/ergodox-live-training-driver/ergodox_live_training_driver/)
 
 ## Install open_ergodox_layout
 
@@ -12,7 +16,7 @@ cargo install --git https://github.com/dmweis/ergodox-live-training-driver --bin
 
 ## License
 
-This project is dual licensed under MIT and Apache licenses.  
+This project is dual licensed under MIT and Apache licenses.
 
 ## Disclaimer
 
