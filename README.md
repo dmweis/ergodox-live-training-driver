@@ -14,6 +14,10 @@ Driver for the live training protocol for the GMK firmware used on the Erogdox-e
 cargo install --git https://github.com/dmweis/ergodox-live-training-driver --bin open_ergodox_layout
 ```
 
+## System dependencies
+
+On ubuntu you may need `libusb-1.0-0-dev` and `libudev-dev`.
+
 ## License
 
 This project is dual licensed under MIT and Apache licenses.
