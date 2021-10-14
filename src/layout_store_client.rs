@@ -206,7 +206,7 @@ pub fn query_layout(hash_id: String, revision_id: String) -> Result<Layout> {
 
     let client = reqwest::blocking::Client::new();
     let res = client
-        .post("https://oryx.ergodox-ez.com/graphql")
+        .post("https://oryx.zsa.io/graphql")
         .json(&request_body)
         .send()?;
     let response_body: Response<layout_query::ResponseData> = res.json()?;

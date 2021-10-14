@@ -18,6 +18,17 @@ cargo install --git https://github.com/dmweis/ergodox-live-training-driver --bin
 
 On ubuntu you may need `libusb-1.0-0-dev` and `libudev-dev`.
 
+## Training website
+
+It seems that the ergodox training websites GraphQL backend has moved.
+Used to be at `https://oryx.ergodox-ez.com/graphql` but now is at `https://oryx.zsa.io/graphql`.
+If this changes in the future you can easily check by:
+
+1. Open Oryx live trainer
+2. Open developer tools and network tab
+3. Connect your keyboard
+4. Look for requests to some graphql endpoint
+
 ## License
 
 This project is dual licensed under MIT and Apache licenses.
