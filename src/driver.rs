@@ -224,7 +224,7 @@ fn decode_packet(data: &[u8]) -> Vec<Event> {
                     .ok_or(DriverError::FailedToDecode)?;
                 let text =
                     std::str::from_utf8(unicode_buffer).map_err(|_| DriverError::FailedToDecode)?;
-                Event::LayoutName(LayoutId::decode(&text)?)
+                Event::LayoutName(LayoutId::decode(text)?)
             }
             _ => return Err(DriverError::FailedToDecode.into()),
         };
